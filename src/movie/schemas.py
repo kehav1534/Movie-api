@@ -5,7 +5,8 @@ class Movie(BaseModel):
     mid : str
     title : str
     rating: float
-    release_date : date
+    release_date : str
+    lang: list
     duration : int
     genres: list
     cast : list
