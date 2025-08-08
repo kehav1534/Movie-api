@@ -5,6 +5,7 @@ class Movie(BaseModel):
     mid : str
     title : str
     rating: float
+    lang: list
     release_date : str
     duration : int
     genres: list
@@ -15,22 +16,14 @@ class Movie(BaseModel):
     poster_url : str
     trailer_url : Optional[str]
     
-class MovieOptional(BaseModel):
-    title : Optional[str]
-    rating: Optional[float]
-    duration : Optional[int]
-    poster_url : Optional[str]
-    trailer_url : Optional[str]
-   
-class User(BaseModel):
-    name : Optional[str]
-    email : str
-    pwd : str
-
-class HistoryData(BaseModel):
+class MovieUpdate(BaseModel):
     mid : str
-    wd : float   # watched duration
-    
-class UserHistory(BaseModel):
-    email : str
-    data : list[HistoryData]
+    title : str
+    rating: float
+    lang : list
+    duration : int
+    genres : list
+    dsc : str
+    poster_url : str
+    trailer_url : str
+   

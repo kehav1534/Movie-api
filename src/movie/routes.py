@@ -10,7 +10,7 @@ movie_router = APIRouter()
 async def get_movie(movie_id:str=None) -> Movie:
     for movie in movie_data:
         if movie['mid'] == movie_id:
-            return movie_id
+            return movie
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Movie not found.")
         
 
@@ -24,24 +24,47 @@ async def get_movie(q:str=None) -> Movie | List[Movie]:
         
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"'{q}' Not Found.")
 
-@movie_router.get('/sh/of/g', status_code=status.HTTP_200_OK)
+@movie_router.get('/filter', status_code=status.HTTP_200_OK)
 async def genre_lang_filter(genre:list = Query(default=[]), lang: list=Query(default=[]))->List[Movie]:
     mov = []
-    if genre or lang:
+    if genre and lang:
         for movie in movie_data:
             if any(m in movie['lang'] for m in lang) and any(m in movie['genres'] for m in genre) and len(mov) < 20:
                 mov.append(movie)
-                
-        return sorted(mov, key=lambda x: x["rating"])
     
-    if not mov:
+    elif genre or lang:
+        for movie in movie_data:
+            if any(m in movie['lang'] for m in lang) or any(m in movie['genres'] for m in genre) and len(mov) < 20:
+                mov.append(movie)
+    
+    else:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail='No movie found as per your match...')
+    
+    return sorted(mov, key=lambda x: x['rating'])
         
 
-@movie_router.post("/m/add", status_code=status.HTTP_202_ACCEPTED)
-async def add_movie(movie_data:Movie)-> bool:
+@movie_router.post("/sh", status_code=status.HTTP_202_ACCEPTED)
+async def add_movie(data:Movie)-> bool:
+    movie_data.append(data.model_dump())
     return True
 
-@movie_router.delete("/m/{movie_id}", status_code=status.HTTP_200_OK) 
-async def remove_show(movie_id: str)-> bool:
-    return True
+@movie_router.patch("/sh", status_code=status.HTTP_202_ACCEPTED)
+async def add_movie(data:MovieUpdate)-> Movie:
+    dt = data.model_dump().copy()
+    for movie in movie_data:
+        if dt['mid'] == movie['mid']:
+            for key in dt.keys():
+                movie[key]= dt[key]
+            return movie
+        
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Show Not found in DataBase.")
+
+
+@movie_router.delete("/m/{mid}", status_code=status.HTTP_200_OK) 
+async def remove_show(mid: str)-> bool:
+    for show in movie_data: 
+        if mid == show['mid']:
+            movie_data.remove(show)
+            return True
+        
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Show Not Found.")
